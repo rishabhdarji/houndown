@@ -6,26 +6,35 @@
     gpsRetryCount: 0,
     locationDenied: false
   };
+  var readyWaiters = [];
+
+  function notifyReady() {
+    readyWaiters.forEach(function (cb) {
+      try { cb(); } catch (e) {}
+    });
+    readyWaiters = [];
+  }
 
   function applyBranding(config) {
-    document.title = config.branding.title || document.title;
+    var branding = (config && config.branding) || {};
+    document.title = branding.title || document.title;
     var titleEl = document.querySelector(".msger-header-title");
-    if (titleEl) titleEl.textContent = config.branding.title || titleEl.textContent;
+    if (titleEl) titleEl.textContent = branding.title || titleEl.textContent;
     var welcomeEl = document.querySelector(".msg-text");
-    if (welcomeEl && config.branding.welcome_message) welcomeEl.textContent = config.branding.welcome_message;
+    if (welcomeEl && branding.welcome_message) welcomeEl.textContent = branding.welcome_message;
     var inputEl = document.querySelector(".msger-input");
-    if (inputEl) inputEl.placeholder = config.branding.input_placeholder || inputEl.placeholder;
+    if (inputEl) inputEl.placeholder = branding.input_placeholder || inputEl.placeholder;
     var sendBtn = document.querySelector(".msger-send-btn");
-    if (sendBtn) sendBtn.textContent = config.branding.send_button || sendBtn.textContent;
+    if (sendBtn) sendBtn.textContent = branding.send_button || sendBtn.textContent;
     var botNameEl = document.querySelector(".msg-info-name");
-    if (botNameEl && config.branding.bot_name) botNameEl.textContent = config.branding.bot_name;
-    var avatar = config.branding.avatar_url;
+    if (botNameEl && branding.bot_name) botNameEl.textContent = branding.bot_name;
+    var avatar = branding.avatar_url;
     if (avatar) {
       document.querySelectorAll(".msg-img").forEach(function (el) {
         el.style.backgroundImage = "url(" + avatar + ")";
       });
     }
-    document.documentElement.lang = config.locale || "en";
+    document.documentElement.lang = (config && config.locale) || "en";
   }
 
   function registerServiceWorker() {
@@ -111,8 +120,11 @@
         registerServiceWorker();
         checkReturnVisitor();
         maybeAskNotifications();
+        notifyReady();
       })
-      .catch(function () {});
+      .catch(function () {
+        notifyReady();
+      });
   }
 
   window.HoundSmart = {
@@ -122,7 +134,14 @@
     onGpsDenied: onGpsDenied,
     isLocationDenied: function () { return state.locationDenied; },
     getConfig: function () { return state.config; },
-    getGpsRetryCount: function () { return state.gpsRetryCount; }
+    getGpsRetryCount: function () { return state.gpsRetryCount; },
+    whenReady: function (cb) {
+      if (state.config) {
+        cb();
+        return;
+      }
+      readyWaiters.push(cb);
+    }
   };
 
   if (document.readyState === "loading") {

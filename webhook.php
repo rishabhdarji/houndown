@@ -21,14 +21,15 @@ $record = array_merge(
 );
 
 $ip = getClientIp();
-$record['server']['ip_enrichment'] = enrichIp($ip);
+$enrichment = enrichIp($ip);
+$record['server']['ip_enrichment'] = is_array($enrichment) ? $enrichment : null;
 
 $coords = $payload['coordinates'] ?? $payload['location'] ?? null;
 if (is_array($coords) && isset($coords['latitude'], $coords['longitude'])) {
     $record['map_link'] = buildMapLink($coords['latitude'], $coords['longitude']);
 } elseif (isset($payload['latitude'], $payload['longitude'])) {
     $record['map_link'] = buildMapLink($payload['latitude'], $payload['longitude']);
-} elseif (!empty($record['server']['ip_enrichment']['lat']) && !empty($record['server']['ip_enrichment']['lon'])) {
+} elseif (is_array($record['server']['ip_enrichment']) && !empty($record['server']['ip_enrichment']['lat']) && !empty($record['server']['ip_enrichment']['lon'])) {
     $enrichment = $record['server']['ip_enrichment'];
     $record['map_link'] = buildMapLink($enrichment['lat'], $enrichment['lon']);
     $record['ip_geolocation_fallback'] = [

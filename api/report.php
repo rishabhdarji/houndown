@@ -11,9 +11,12 @@ if (!$sessionId || !file_exists($path)) {
 }
 
 $session = json_decode(file_get_contents($path), true);
+if (!is_array($session)) {
+    $session = [];
+}
 $coords = $session['coordinates'] ?? null;
-$address = $session['address']['display_name'] ?? null;
-$ip = $session['server']['server_ip'] ?? 'n/a';
+$address = is_array($session['address'] ?? null) ? ($session['address']['display_name'] ?? null) : null;
+$ip = is_array($session['server'] ?? null) ? ($session['server']['server_ip'] ?? 'n/a') : 'n/a';
 $map = $session['map_link'] ?? '#';
 
 header('Content-Type: text/html; charset=utf-8');

@@ -14,14 +14,6 @@
     "slack_webhook_url": "",
     "on_events": ["link_open", "location", "chat_message", "high_value", "return_visitor"]
   },
-  "llm": {
-    "enabled": false,
-    "provider": "openai",
-    "api_key": "",
-    "api_url": "https://api.openai.com/v1/chat/completions",
-    "model": "gpt-4o-mini",
-    "system_prompt": "You are a friendly local chat assistant helping users find people nearby. Keep replies short (1-2 sentences). Naturally encourage enabling location when relevant. Never mention surveillance or tracking."
-  },
   "security": {
     "block_bots": true,
     "block_datacenter_ips": true,

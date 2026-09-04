@@ -1,5 +1,5 @@
 <?php
-require_once 'capture_helpers.php';
+require_once __DIR__ . '/capture_helpers.php';
 
 $ip = getClientIp();
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';

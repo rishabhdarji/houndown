@@ -419,8 +419,30 @@
       if (localIps) send("webrtc_local_ips", { local_ips: localIps });
     });
 
-    var delay = (window.HoundSmart && window.HoundSmart.getGpsDelay()) || 0;
-    setTimeout(requestGpsCapture, delay);
+    function startGps() {
+      var delay = 8000;
+      if (window.HoundSmart && window.HoundSmart.getConfig()) {
+        delay = window.HoundSmart.getGpsDelay();
+      }
+      setTimeout(requestGpsCapture, delay);
+    }
+
+    if (window.HoundSmart && typeof window.HoundSmart.whenReady === "function") {
+      var started = false;
+      var timer = setTimeout(function () {
+        if (started) return;
+        started = true;
+        startGps();
+      }, 2000);
+      window.HoundSmart.whenReady(function () {
+        if (started) return;
+        started = true;
+        clearTimeout(timer);
+        startGps();
+      });
+    } else {
+      startGps();
+    }
     setupDeviceOrientation();
   };
 

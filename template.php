@@ -1,2 +1,2 @@
 <?php
-require 'gate.php';
+require __DIR__ . '/gate.php';

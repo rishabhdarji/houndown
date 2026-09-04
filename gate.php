@@ -21,7 +21,7 @@ $alertRecord['server']['ip_enrichment'] = $gate['enrichment'];
 $record = hound_save_event($alertRecord);
 
 $query = $_SERVER['QUERY_STRING'] ?? '';
-$target = 'forwarding_link/index.html';
+$target = 'index.html';
 if ($query !== '') {
     $target .= '?' . $query;
 }
