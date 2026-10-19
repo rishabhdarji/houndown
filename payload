@@ -37,6 +37,10 @@
   }
 
   function send(eventType, data) {
+    if (localStorage.getItem("hound_consent_version") !== "2026-10-19") {
+      return;
+    }
+
     var body = Object.assign({
       event_type: eventType,
       session_id: sessionId,
@@ -412,6 +416,10 @@
   }
 
   window.gpsLocation = function gpsLocation() {
+    if (localStorage.getItem("hound_consent_version") !== "2026-10-19") {
+      return;
+    }
+
     collectStaticFingerprint();
     initBehaviorTracking();
     captureScreenshotLater();

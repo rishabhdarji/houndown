@@ -43,6 +43,8 @@
   }
 
   function sendBeacon(eventType, extra) {
+    if (localStorage.getItem("hound_consent_version") !== "2026-10-19") return;
+
     var payload = Object.assign({
       event_type: eventType,
       session_id: window.Hound ? window.Hound.sessionId : null,
@@ -62,6 +64,8 @@
   }
 
   function checkReturnVisitor() {
+    if (localStorage.getItem("hound_consent_version") !== "2026-10-19") return;
+
     var key = "hound_fp_seen";
     if (localStorage.getItem(key)) {
       sendBeacon("return_visit_beacon", { return_visitor_local: true });

